@@ -109,6 +109,21 @@
     tbody tr:nth-child(even) {
       background: #f9fafb;
     }
+
+    /* Highlight classes for top 3 matches */
+    .highlight-1 {
+      background-color: #fff4f4 !important; /* Light Red/Pink */
+      font-weight: 600;
+    }
+    .highlight-2 {
+      background-color: #edf7ff !important; /* Light Blue */
+      font-weight: 600;
+    }
+    .highlight-3 {
+      background-color: #f0fff4 !important; /* Light Green */
+      font-weight: 600;
+    }
+
   </style>
 </head>
 <body>
@@ -246,12 +261,12 @@
       const flowCFM = flow * 2.11888;     // L/s to CFM
       const neededArea = flowCFM / vel;   // sq ft needed
 
-      // Clear highlights
+      // Remove old highlights
       document.querySelectorAll("td").forEach(td => {
         td.classList.remove("highlight-1","highlight-2","highlight-3");
       });
 
-      // Summaries in the result
+      // Show summary
       let summaryHtml = `
         <p>
           <strong>Input Summary:</strong><br>
@@ -287,11 +302,11 @@
       // Sort by closeness
       matches.sort((a,b) => a.diff - b.diff);
 
-      // Top 3
+      // Take top 3
       const top3 = matches.slice(0,3);
       const hasExact = top3.some(m => m.exact);
 
-      // Highlight them
+      // Highlight each match in the table
       top3.forEach((m, idx) => {
         const rowIdx = heights.indexOf(m.heightIn);
         const colIdx = widths.indexOf(m.widthIn) + 1; // +1 for the label col
