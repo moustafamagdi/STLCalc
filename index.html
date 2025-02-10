@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Sand Trap Louver S-4770A - Frame Size Calculator</title>
 
-  <!-- Google Font for a clean/trendy look -->
+  <!-- Google Font -->
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
     rel="stylesheet"
@@ -25,7 +25,6 @@
       font-family: 'Poppins', sans-serif;
       color: #333;
     }
-
     body {
       display: flex;
       flex-direction: column;
@@ -43,13 +42,12 @@
       font-weight: 600;
       color: #222;
     }
-
     p {
       margin-bottom: 2rem;
       line-height: 1.6;
     }
 
-    /* Two-column layout for inputs/results */
+    /* Layout: side-by-side "card" panels for inputs and results */
     .layout {
       display: flex;
       justify-content: space-between;
@@ -63,7 +61,7 @@
       flex: 1 1 300px;
       background: #fff;
       border-radius: 8px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 1.5rem;
       min-width: 250px;
     }
@@ -76,7 +74,7 @@
       padding-bottom: 0.5rem;
     }
 
-    /* Inputs */
+    /* Inputs & Button */
     label {
       display: block;
       margin: 1rem 0 0.4rem;
@@ -97,7 +95,7 @@
     }
 
     button {
-      display: inline-block;
+      display: block;
       margin-top: 1.2rem;
       padding: 0.7rem 1.2rem;
       border: none;
@@ -123,70 +121,74 @@
       font-weight: 600;
     }
 
-    /* Centered table */
+    /* The table */
     table {
+      width: 100%;
       margin: 0 auto;
       border-collapse: collapse;
-      width: 100%;
-      max-width: 1000px;
+      border: 1px solid #ddd;
       background: #fff;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-
-      /* Let fixed table layout hold forced column widths */
-      table-layout: fixed; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    thead {
+    thead th {
       background: #0072ee;
       color: #fff;
+      font-weight: 500;
+      text-align: center;
+      padding: 0.8rem;
+      border-right: 1px solid #0072ee; /* match background for a clean look */
+    }
+    thead th:last-child {
+      border-right: none;
     }
 
-    th, td {
-      padding: 0.8rem 1rem;
+    tbody td {
+      padding: 0.8rem;
       text-align: center;
       border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
       font-size: 0.95rem;
-      word-wrap: break-word;
-      /* If the cell is forced narrower than text, wrap text nicely */
+    }
+    tbody td:last-child {
+      border-right: none;
     }
 
-    th:first-child {
-      text-align: left;
+    /* Zebra striping (alternating row colors) */
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
     }
 
+    /* Hover effect for rows */
     tbody tr:hover {
-      background-color: #fafafa;
+      background: #f1f3f5;
     }
 
-    /* Match first column color with header row */
-    tbody td:first-child {
-      background: #0072ee;
-      color: #fff;
-      font-weight: 600;
+    /* Remove bottom border from last row */
+    tbody tr:last-child td {
+      border-bottom: none;
     }
 
-    /* Highlight styles */
+    /* Highlight classes for the top 3 matches */
     .highlight-1 {
-      background-color: #fff4f4; /* Very light red/pink */
+      background-color: #fff4f4 !important; /* Light red/pink, override zebra */
       font-weight: 600;
     }
     .highlight-2 {
-      background-color: #edf7ff; /* Very light blue */
+      background-color: #edf7ff !important; /* Light blue, override zebra */
       font-weight: 600;
     }
     .highlight-3 {
-      background-color: #f0fff4; /* Very light green */
+      background-color: #f0fff4 !important; /* Light green, override zebra */
       font-weight: 600;
     }
 
-    /* Responsive adjustments */
+    /* Adjust for smaller screens */
     @media (max-width: 768px) {
-      thead {
-        font-size: 0.9rem;
-      }
-      th, td {
+      thead th,
+      tbody td {
         font-size: 0.85rem;
         padding: 0.6rem;
       }
@@ -208,7 +210,6 @@
       <!-- Left Card: Inputs -->
       <div class="card">
         <h2>Inputs</h2>
-        <!-- Use a form so pressing Enter will submit -->
         <form onsubmit="event.preventDefault(); findNearest();">
           <label for="ductFlow">Air Flow (L/s):</label>
           <input
@@ -226,7 +227,6 @@
             value="300"
           />
 
-          <!-- Button is now type="submit" so pressing Enter triggers it -->
           <button type="submit">Find Nearest</button>
         </form>
       </div>
@@ -240,7 +240,6 @@
       </div>
     </div>
 
-    <!-- Centered Table -->
     <table id="dataTable">
       <thead>
         <tr>
@@ -268,18 +267,18 @@
   </div>
 
   <script>
-    /* Utility functions */
+    /* Utility: Convert velocities & flows */
     function fpmToMps(fpmValue) {
       return fpmValue * 0.00508; // 1 ft/min = 0.00508 m/s
     }
     function lsToM3s(lsValue) {
-      return lsValue * 0.001; // 1 L/s = 0.001 m3/s
+      return lsValue * 0.001; // 1 L/s = 0.001 m³/s
     }
 
+    /* Data: widths, heights, free areas (sq ft) */
     const widths = [18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96];
     const heights = [18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96];
 
-    // 14x14 array of free areas in sq ft
     const freeAreas = [
       [0.48, 0.67, 0.86, 1.04, 1.24, 1.43, 1.61, 1.80, 2.00, 2.18, 2.37, 2.55, 2.75, 2.94],
       [0.70, 0.96, 1.23, 1.50, 1.78, 2.05, 2.32, 2.59, 2.87, 3.14, 3.41, 3.67, 3.96, 4.23],
@@ -297,47 +296,34 @@
       [3.25, 4.50, 5.76, 7.01, 8.34, 9.59, 10.84, 12.09, 13.43, 14.68, 15.93, 17.18, 18.52, 19.77],
     ];
 
-    // Populate the table initially
+    // Populate table on page load
     const tableBody = document.getElementById("tableBody");
     heights.forEach((heightVal, rowIndex) => {
       const row = document.createElement("tr");
-      // First cell: row label
-      const header = document.createElement("td");
-      header.textContent = heightVal;
-      row.appendChild(header);
 
+      // First cell: row label
+      const headerCell = document.createElement("td");
+      headerCell.textContent = heightVal;
+      // Align left for first column, to match the heading
+      headerCell.style.textAlign = "left";
+      row.appendChild(headerCell);
+
+      // Remaining cells: free area data
       widths.forEach((_, colIndex) => {
-        const cell = document.createElement("td");
-        cell.textContent = freeAreas[rowIndex][colIndex];
-        row.appendChild(cell);
+        const td = document.createElement("td");
+        td.textContent = freeAreas[rowIndex][colIndex];
+        row.appendChild(td);
       });
+
       tableBody.appendChild(row);
     });
 
-    // On DOM load, match the first column’s width to the thead row height
-    window.addEventListener("DOMContentLoaded", function() {
-      // Get the height (in px) of the first row in THEAD
-      const firstHeaderRow = document.querySelector("thead tr");
-      if (!firstHeaderRow) return;
-
-      const rowHeight = firstHeaderRow.offsetHeight; // e.g. 40 px
-
-      // Target the entire first column, i.e. TH:first-child and TD:first-child
-      const colCells = document.querySelectorAll("thead tr th:first-child, tbody tr td:first-child");
-
-      colCells.forEach(cell => {
-        // Set the width to match the rowHeight in px
-        cell.style.width = rowHeight + "px";
-        cell.style.minWidth = rowHeight + "px";
-      });
-    });
-
+    // Main function to find top 3 matches
     function findNearest() {
       const ductFlow = parseFloat(document.getElementById("ductFlow").value);
       const velocity = parseFloat(document.getElementById("velocity").value);
       const resultDiv = document.getElementById("result");
 
-      // Clear old messages
       resultDiv.innerHTML = "";
 
       // Validate
@@ -346,17 +332,17 @@
         return;
       }
 
-      // 1) Convert L/s to CFM
+      // Convert L/s -> CFM
       const flowRateCFM = ductFlow * 2.11888;
-      // 2) Required free face area
+      // Required free face area
       const freeFaceArea = flowRateCFM / velocity;
 
-      // Remove old highlights
+      // Clear old highlights
       document.querySelectorAll("td").forEach(td => {
         td.classList.remove("highlight-1", "highlight-2", "highlight-3");
       });
 
-      // Build input summary
+      // Summaries
       let summaryHtml = `
         <strong>Input Summary:</strong><br>
         Air Flow: ${ductFlow.toFixed(2)} L/s 
@@ -367,47 +353,50 @@
         <br>
       `;
 
-      // Gather matches
-      let possibleMatches = [];
+      // Collect possible matches
+      const matches = [];
       for (let i = 0; i < heights.length; i++) {
         for (let j = 0; j < widths.length; j++) {
           const areaVal = freeAreas[i][j];
           if (areaVal >= freeFaceArea) {
             const diff = Math.abs(areaVal - freeFaceArea);
-            possibleMatches.push({
+            matches.push({
               widthIn: widths[j],
               heightIn: heights[i],
               area: areaVal,
               diff,
-              exact: diff < 0.000001
+              exact: diff < 1e-6
             });
           }
         }
       }
 
-      if (possibleMatches.length === 0) {
+      // If no area is big enough
+      if (matches.length === 0) {
         resultDiv.innerHTML = summaryHtml + "No frame sizes meet or exceed the required free area.";
         return;
       }
 
-      // Sort and get the top 3
-      possibleMatches.sort((a, b) => a.diff - b.diff);
-      const nearestThree = possibleMatches.slice(0, 3);
+      // Sort by closeness
+      matches.sort((a, b) => a.diff - b.diff);
+      // Top 3
+      const nearestThree = matches.slice(0, 3);
       const anyExact = nearestThree.some(m => m.exact);
 
-      // Highlight
-      nearestThree.forEach((m, index) => {
+      // Highlight them
+      nearestThree.forEach((m, i) => {
         const rowIdx = heights.indexOf(m.heightIn);
-        const colIdx = widths.indexOf(m.widthIn) + 1; // +1 for row label
+        // +1 because col 0 is the row label
+        const colIdx = widths.indexOf(m.widthIn) + 1;
         const rowEl = tableBody.querySelectorAll("tr")[rowIdx];
-        rowEl.querySelectorAll("td")[colIdx].classList.add(`highlight-${index + 1}`);
+        rowEl.querySelectorAll("td")[colIdx].classList.add(`highlight-${i + 1}`);
       });
 
-      // Build result listing
-      let matchesHtml = nearestThree.map((m, idx) => {
+      // Build result text
+      let matchesHtml = nearestThree.map((m, i) => {
         const exactStr = m.exact ? " (Exact)" : "";
         return `
-          <span class="highlight-${idx + 1}">
+          <span class="highlight-${i + 1}">
             Width: ${m.widthIn}" &times; Height: ${m.heightIn}"
             <br>Area: ${m.area.toFixed(2)} sq ft${exactStr}
           </span>
