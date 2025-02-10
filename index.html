@@ -13,7 +13,7 @@
   <p>
     This page calculates the <strong>required frame size</strong> based on the
     <strong>air flow</strong> (L/s) and <strong>face velocity</strong> (FPM).
-    It uses a free-area table for height &times; width to find the
+    It uses a free-area table for <em>width</em> × <em>height</em> to find the
     <em>Nearest Matches</em> that meet or exceed the required free area.
   </p>
 
@@ -66,9 +66,10 @@
   <!-- Table of free areas -->
   <table id="dataTable">
     <thead>
+      <!-- The top row: first cell for "Width/Height (in)", then 14 heights -->
       <tr>
         <th>Width / Height (in)</th>
-        <!-- Heights go across the top row -->
+        <!-- Heights go here -->
       </tr>
     </thead>
     <tbody id="tableBody">
@@ -77,42 +78,45 @@
   </table>
 
   <script>
-    // Data arrays: widths, heights (both in inches), freeAreas in ft²
-    // IMPORTANT: Current data is organized as:
-    //   freeAreas[rowIndex][colIndex] = area
-    //   rowIndex -> (original) height
-    //   colIndex -> (original) width
-    const widths = [18,24,30,36,42,48,54,60,66,72,78,84,90,96];
-    const heights = [18,24,30,36,42,48,54,60,66,72,78,84,90,96];
+    // We have 14 widths and 14 heights, each in inches
+    const widths = [18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96];
+    const heights = [18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96];
 
-    // freeAreas[h][w] => height-based row, width-based column
+    // freeAreas[w][h] => free area (ft²) for width = widths[w], height = heights[h]
+    // Row index => width, Column index => height.
     const freeAreas = [
-      [0.48,0.67,0.86,1.04,1.24,1.43,1.61,1.80,2.00,2.18,2.37,2.55,2.75,2.94],
-      [0.70,0.96,1.23,1.50,1.78,2.05,2.32,2.59,2.87,3.14,3.41,3.67,3.96,4.23],
-      [0.91,1.26,1.60,1.95,2.33,2.67,3.02,3.37,3.74,4.09,4.44,4.79,5.16,5.51],
-      [1.12,1.55,1.98,2.41,2.87,3.30,3.73,4.16,4.62,5.05,5.48,5.91,6.36,6.79],
-      [1.33,1.85,2.36,2.87,3.42,3.93,4.44,4.96,5.50,6.02,6.53,7.04,7.59,8.10],
-      [1.55,2.14,2.74,3.33,3.97,4.56,5.16,5.75,6.39,6.99,7.58,8.18,8.81,9.41],
-      [1.76,2.44,3.11,3.79,4.51,5.19,5.87,6.54,7.27,7.94,8.62,9.30,10.02,10.69],
-      [1.97,2.73,3.49,4.25,5.06,5.82,6.58,7.34,8.15,8.91,9.67,10.42,11.23,11.99],
-      [2.19,3.03,3.87,4.71,5.61,6.45,7.29,8.13,9.03,9.87,10.71,11.55,12.45,13.29],
-      [2.40,3.32,4.25,5.17,6.15,7.08,8.00,8.92,9.91,10.83,11.75,12.68,13.66,14.58],
-      [2.61,3.62,4.62,5.63,6.70,7.71,8.71,9.71,10.79,11.79,12.80,13.80,14.87,15.88],
-      [2.83,3.91,5.00,6.09,7.25,8.33,9.42,10.51,11.67,12.75,13.84,14.93,16.09,17.17],
-      [3.04,4.21,5.38,6.55,7.79,8.96,10.13,11.30,12.55,13.72,14.89,16.05,17.30,18.47],
-      [3.25,4.50,5.76,7.01,8.34,9.59,10.84,12.09,13.43,14.68,15.93,17.18,18.52,19.77],
+      // width = 18
+      [0.48, 0.67, 0.86, 1.04, 1.24, 1.43, 1.61, 1.80, 2.00, 2.18, 2.37, 2.55, 2.75, 2.94],
+      // width = 24
+      [0.70, 0.96, 1.23, 1.50, 1.78, 2.05, 2.32, 2.59, 2.87, 3.14, 3.41, 3.67, 3.96, 4.23],
+      // width = 30
+      [0.91, 1.26, 1.60, 1.95, 2.33, 2.67, 3.02, 3.37, 3.74, 4.09, 4.44, 4.79, 5.16, 5.51],
+      // width = 36
+      [1.12, 1.55, 1.98, 2.41, 2.87, 3.30, 3.73, 4.16, 4.62, 5.05, 5.48, 5.91, 6.36, 6.79],
+      // width = 42
+      [1.33, 1.85, 2.36, 2.87, 3.42, 3.93, 4.44, 4.96, 5.50, 6.02, 6.53, 7.04, 7.59, 8.10],
+      // width = 48
+      [1.55, 2.14, 2.74, 3.33, 3.97, 4.56, 5.16, 5.75, 6.39, 6.99, 7.58, 8.18, 8.81, 9.41],
+      // width = 54
+      [1.76, 2.44, 3.11, 3.79, 4.51, 5.19, 5.87, 6.54, 7.27, 7.94, 8.62, 9.30, 10.02, 10.69],
+      // width = 60
+      [1.97, 2.73, 3.49, 4.25, 5.06, 5.82, 6.58, 7.34, 8.15, 8.91, 9.67, 10.42, 11.23, 11.99],
+      // width = 66
+      [2.19, 3.03, 3.87, 4.71, 5.61, 6.45, 7.29, 8.13, 9.03, 9.87, 10.71, 11.55, 12.45, 13.29],
+      // width = 72
+      [2.40, 3.32, 4.25, 5.17, 6.15, 7.08, 8.00, 8.92, 9.91, 10.83, 11.75, 12.68, 13.66, 14.58],
+      // width = 78
+      [2.61, 3.62, 4.62, 5.63, 6.70, 7.71, 8.71, 9.71, 10.79, 11.79, 12.80, 13.80, 14.87, 15.88],
+      // width = 84
+      [2.83, 3.91, 5.00, 6.09, 7.25, 8.33, 9.42, 10.51, 11.67, 12.75, 13.84, 14.93, 16.09, 17.17],
+      // width = 90
+      [3.04, 4.21, 5.38, 6.55, 7.79, 8.96, 10.13, 11.30, 12.55, 13.72, 14.89, 16.05, 17.30, 18.47],
+      // width = 96
+      [3.25, 4.50, 5.76, 7.01, 8.34, 9.59, 10.84, 12.09, 13.43, 14.68, 15.93, 17.18, 18.52, 19.77],
     ];
 
-    // We need to TRANSPOSE freeAreas so that:
-    //   rowIndex -> width
-    //   colIndex -> height
-    // Because we want the first column to be widths, first row to be heights.
-    const freeAreasTransposed = widths.map((_, wIndex) => {
-      return heights.map((_, hIndex) => freeAreas[hIndex][wIndex]);
-    });
-
     // Build the table on page load
-    // 1) Build the top <thead> row: [ "Width / Height (in)", then each height ]
+    // 1) Build the top <thead> row: [ "Width / Height (in)", then each Height ]
     const theadRow = document.querySelector("thead tr");
     heights.forEach((h) => {
       const th = document.createElement("th");
@@ -120,21 +124,21 @@
       theadRow.appendChild(th);
     });
 
-    // 2) Build the <tbody> with each row = one width
+    // 2) Build the <tbody>, each row = one width
     const tableBody = document.getElementById("tableBody");
-    widths.forEach((widthVal, wIndex) => {
+    widths.forEach((wVal, wIndex) => {
       const row = document.createElement("tr");
 
       // First cell: the "width" label
       const widthCell = document.createElement("td");
-      widthCell.textContent = widthVal;
+      widthCell.textContent = wVal;
       widthCell.style.textAlign = "left";
       row.appendChild(widthCell);
 
       // Next cells: free area for each height
       heights.forEach((_, hIndex) => {
         const cell = document.createElement("td");
-        cell.textContent = freeAreasTransposed[wIndex][hIndex];
+        cell.textContent = freeAreas[wIndex][hIndex];
         row.appendChild(cell);
       });
 
@@ -149,7 +153,6 @@
       return ls * 0.001; // 1 L/s = 0.001 m³/s
     }
 
-    // Main function to find nearest matches
     function findNearest() {
       const flow = parseFloat(document.getElementById("ductFlow").value);
       const vel  = parseFloat(document.getElementById("velocity").value);
@@ -184,19 +187,18 @@
 
       // Gather all matches >= neededArea
       const matches = [];
-      // Loop over widths (rows), heights (columns)
-      for (let wIndex = 0; wIndex < widths.length; wIndex++) {
-        for (let hIndex = 0; hIndex < heights.length; hIndex++) {
-          const areaVal = freeAreasTransposed[wIndex][hIndex];
+      for (let w = 0; w < widths.length; w++) {
+        for (let h = 0; h < heights.length; h++) {
+          const areaVal = freeAreas[w][h];
           if (areaVal >= neededArea) {
             const diff = Math.abs(areaVal - neededArea);
             matches.push({
-              widthIn: widths[wIndex],
-              heightIn: heights[hIndex],
+              widthIn: widths[w],
+              heightIn: heights[h],
               area: areaVal,
               diff: diff,
-              rowIndex: wIndex,    // table row
-              colIndex: hIndex+1,  // table col (+1 to skip the first width label)
+              rowIndex: w,
+              colIndex: h + 1, // +1 because 0th cell is the width label
               exact: diff < 1e-6
             });
           }
@@ -210,11 +212,11 @@
         return;
       }
 
-      // Sort by closeness
+      // Sort by closeness (smallest difference first)
       matches.sort((a, b) => a.diff - b.diff);
 
       // Take top 3
-      const top3 = matches.slice(0,3);
+      const top3 = matches.slice(0, 3);
       const hasExact = top3.some(m => m.exact);
 
       // Highlight them in the table
@@ -225,7 +227,7 @@
       });
 
       // Build the “Nearest Matches” lines
-      // NOTE: The user wants "Height x Width" in the final text.
+      // You asked for “Height × Width” in the final listing
       let matchesHtml = top3.map((m, idx) => {
         const highlightClass = `highlight-${idx + 1}`;
         const exactStr = m.exact ? " (Exact)" : "";
