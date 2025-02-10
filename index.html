@@ -5,147 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Sand Trap Louver Type: S-4770A - Frame Size Calculator</title>
 
-  <!-- Google Font for a clean, modern look -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
-    rel="stylesheet"
-  />
-
-  <style>
-    /* Global resets and default styling */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #f6f8fa;
-      color: #333;
-      margin: 2rem;
-    }
-    h1 {
-      margin-bottom: 1rem;
-      font-weight: 600;
-      color: #222;
-    }
-    p {
-      line-height: 1.6;
-      margin-bottom: 1rem;
-    }
-
-    /* Layout: side-by-side cards for inputs/results */
-    .layout {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-bottom: 2rem;
-    }
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      padding: 1.5rem;
-      flex: 1 1 300px;
-      min-width: 250px;
-    }
-    .card h2 {
-      border-bottom: 1px solid #eee;
-      padding-bottom: 0.5rem;
-      margin-bottom: 1rem;
-      font-weight: 500;
-    }
-
-    label {
-      margin: 1rem 0 0.4rem;
-      display: block;
-      font-weight: 500;
-    }
-    input {
-      width: 100%;
-      padding: 0.6rem 0.8rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      margin-top: 1.2rem;
-      padding: 0.7rem 1.2rem;
-      border: none;
-      border-radius: 4px;
-      background: #0072ee;
-      color: #fff;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1rem;
-      font-weight: 500;
-    }
-    button:hover {
-      background: #005bb5;
-    }
-
-    .result {
-      margin-top: 1rem;
-    }
-
-    /* Table styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    thead th {
-      background: #0072ee;
-      color: #fff;
-      padding: 0.8rem;
-      font-weight: 500;
-    }
-    tbody td {
-      padding: 0.8rem;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-    }
-    tbody tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
-    /* Highlight classes for top 3 matches */
-    .highlight-1 {
-      background-color: #fff4f4 !important; /* Light Red/Pink */
-      font-weight: 600;
-    }
-    .highlight-2 {
-      background-color: #edf7ff !important; /* Light Blue */
-      font-weight: 600;
-    }
-    .highlight-3 {
-      background-color: #f0fff4 !important; /* Light Green */
-      font-weight: 600;
-    }
-
-    /* Reference link styling at the bottom */
-    .reference {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-    .reference a {
-      color: #0072ee;
-      text-decoration: none;
-      border-bottom: 1px dashed #0072ee;
-    }
-    .reference a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <!-- Link to external CSS file -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Sand Trap Louver Type: S-4770A</h1>
   <p>
-    This page calculates the <strong>required frame size</strong> based on the 
-    <strong>air flow</strong> (L/s) and <strong>face velocity</strong> (FPM). 
-    It uses a free-area table for width &times; height to find the 
+    This page calculates the <strong>required frame size</strong> based on the
+    <strong>air flow</strong> (L/s) and <strong>face velocity</strong> (FPM).
+    It uses a free-area table for width &times; height to find the
     <em>Nearest Matches</em> that meet or exceed the required free area.
   </p>
 
@@ -185,12 +53,16 @@
 
   <!-- Reference link at the bottom -->
   <div class="reference">
-    Reference : 
-    <a href="https://moustafamagdi.github.io/STLCalc/SHS-MAT-VIB-AR-AR-G-1746-02_9.pdf" target="_blank">
+    Reference :
+    <a
+      href="https://moustafamagdi.github.io/STLCalc/SHS-MAT-VIB-AR-AR-G-1746-02_9.pdf"
+      target="_blank"
+    >
       SHS-MAT-VIB-AR-AR-G-1746-02_9.pdf
     </a>
   </div>
-  <br>
+  <br />
+
   <!-- Table of free areas -->
   <table id="dataTable">
     <thead>
@@ -216,8 +88,6 @@
       <!-- Populated by JavaScript -->
     </tbody>
   </table>
-
-  
 
   <script>
     /* Data arrays: widths, heights, freeAreas (sq ft) */
@@ -282,7 +152,7 @@
 
       // Convert L/s -> CFM and compute required area
       const flowCFM = flow * 2.11888;
-      const neededArea = flowCFM / vel;
+      const neededArea = flowCFM / vel; // in ft²
 
       // Remove old highlights
       document.querySelectorAll("td").forEach(td => {
@@ -322,7 +192,7 @@
         return;
       }
 
-      // Sort by closeness
+      // Sort by closeness (smallest difference first)
       matches.sort((a, b) => a.diff - b.diff);
 
       // Take top 3
@@ -332,18 +202,18 @@
       // Highlight them in the table
       top3.forEach((m, idx) => {
         const rowIdx = heights.indexOf(m.heightIn);
-        const colIdx = widths.indexOf(m.widthIn) + 1; // +1 for first col
+        const colIdx = widths.indexOf(m.widthIn) + 1; // +1 to skip the first "Height" column
         const rowEl = tableBody.querySelectorAll("tr")[rowIdx];
         rowEl.querySelectorAll("td")[colIdx].classList.add(`highlight-${idx + 1}`);
       });
 
-      // Build the “Nearest Matches” lines, each in its own <br>
+      // Build the “Nearest Matches” lines
       let matchesHtml = top3.map((m, idx) => {
-        let highlightClass = `highlight-${idx + 1}`; 
+        let highlightClass = `highlight-${idx + 1}`;
         const exactStr = m.exact ? " (Exact)" : "";
-        // Wrap in a span with .highlight-X to color the text
         return `<span class="${highlightClass}">
-          Width: ${m.widthIn}" × Height: ${m.heightIn}" (Area: ${m.area.toFixed(2)} sq ft${exactStr})
+          Width: ${m.widthIn}" × Height: ${m.heightIn}" 
+          (Area: ${m.area.toFixed(2)} sq ft${exactStr})
         </span>`;
       }).join("<br>");
 
