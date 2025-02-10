@@ -133,6 +133,9 @@
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+
+      /* Let fixed table layout hold forced column widths */
+      table-layout: fixed; 
     }
 
     thead {
@@ -145,6 +148,8 @@
       text-align: center;
       border-bottom: 1px solid #eee;
       font-size: 0.95rem;
+      word-wrap: break-word;
+      /* If the cell is forced narrower than text, wrap text nicely */
     }
 
     th:first-child {
@@ -309,10 +314,23 @@
       tableBody.appendChild(row);
     });
 
-    function fpmToCfm(faceVelocity, freeArea) {
-      // Just an example if you need it, but not used in this code.
-      return faceVelocity * freeArea;
-    }
+    // On DOM load, match the first column’s width to the thead row height
+    window.addEventListener("DOMContentLoaded", function() {
+      // Get the height (in px) of the first row in THEAD
+      const firstHeaderRow = document.querySelector("thead tr");
+      if (!firstHeaderRow) return;
+
+      const rowHeight = firstHeaderRow.offsetHeight; // e.g. 40 px
+
+      // Target the entire first column, i.e. TH:first-child and TD:first-child
+      const colCells = document.querySelectorAll("thead tr th:first-child, tbody tr td:first-child");
+
+      colCells.forEach(cell => {
+        // Set the width to match the rowHeight in px
+        cell.style.width = rowHeight + "px";
+        cell.style.minWidth = rowHeight + "px";
+      });
+    });
 
     function findNearest() {
       const ductFlow = parseFloat(document.getElementById("ductFlow").value);
