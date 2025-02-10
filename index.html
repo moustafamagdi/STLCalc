@@ -13,7 +13,7 @@
   <p>
     This page calculates the <strong>required frame size</strong> based on the
     <strong>air flow</strong> (L/s) and <strong>face velocity</strong> (FPM).
-    It uses a free-area table for width &times; height to find the
+    It uses a free-area table for height &times; width to find the
     <em>Nearest Matches</em> that meet or exceed the required free area.
   </p>
 
@@ -67,21 +67,8 @@
   <table id="dataTable">
     <thead>
       <tr>
-        <th>Width/Height (in)</th>
-        <th>18</th>
-        <th>24</th>
-        <th>30</th>
-        <th>36</th>
-        <th>42</th>
-        <th>48</th>
-        <th>54</th>
-        <th>60</th>
-        <th>66</th>
-        <th>72</th>
-        <th>78</th>
-        <th>84</th>
-        <th>90</th>
-        <th>96</th>
+        <th>Width / Height (in)</th>
+        <!-- Heights go across the top row -->
       </tr>
     </thead>
     <tbody id="tableBody">
@@ -90,10 +77,15 @@
   </table>
 
   <script>
-    /* Data arrays: widths, heights, freeAreas (sq ft) */
+    // Data arrays: widths, heights (both in inches), freeAreas in ft²
+    // IMPORTANT: Current data is organized as:
+    //   freeAreas[rowIndex][colIndex] = area
+    //   rowIndex -> (original) height
+    //   colIndex -> (original) width
     const widths = [18,24,30,36,42,48,54,60,66,72,78,84,90,96];
     const heights = [18,24,30,36,42,48,54,60,66,72,78,84,90,96];
 
+    // freeAreas[h][w] => height-based row, width-based column
     const freeAreas = [
       [0.48,0.67,0.86,1.04,1.24,1.43,1.61,1.80,2.00,2.18,2.37,2.55,2.75,2.94],
       [0.70,0.96,1.23,1.50,1.78,2.05,2.32,2.59,2.87,3.14,3.41,3.67,3.96,4.23],
@@ -111,20 +103,41 @@
       [3.25,4.50,5.76,7.01,8.34,9.59,10.84,12.09,13.43,14.68,15.93,17.18,18.52,19.77],
     ];
 
-    // Build the table on page load
-    const tableBody = document.getElementById("tableBody");
-    heights.forEach((h, i) => {
-      const row = document.createElement("tr");
-      const firstCell = document.createElement("td");
-      firstCell.textContent = h;
-      firstCell.style.textAlign = "left";
-      row.appendChild(firstCell);
+    // We need to TRANSPOSE freeAreas so that:
+    //   rowIndex -> width
+    //   colIndex -> height
+    // Because we want the first column to be widths, first row to be heights.
+    const freeAreasTransposed = widths.map((_, wIndex) => {
+      return heights.map((_, hIndex) => freeAreas[hIndex][wIndex]);
+    });
 
-      widths.forEach((_, j) => {
+    // Build the table on page load
+    // 1) Build the top <thead> row: [ "Width / Height (in)", then each height ]
+    const theadRow = document.querySelector("thead tr");
+    heights.forEach((h) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      theadRow.appendChild(th);
+    });
+
+    // 2) Build the <tbody> with each row = one width
+    const tableBody = document.getElementById("tableBody");
+    widths.forEach((widthVal, wIndex) => {
+      const row = document.createElement("tr");
+
+      // First cell: the "width" label
+      const widthCell = document.createElement("td");
+      widthCell.textContent = widthVal;
+      widthCell.style.textAlign = "left";
+      row.appendChild(widthCell);
+
+      // Next cells: free area for each height
+      heights.forEach((_, hIndex) => {
         const cell = document.createElement("td");
-        cell.textContent = freeAreas[i][j];
+        cell.textContent = freeAreasTransposed[wIndex][hIndex];
         row.appendChild(cell);
       });
+
       tableBody.appendChild(row);
     });
 
@@ -136,6 +149,7 @@
       return ls * 0.001; // 1 L/s = 0.001 m³/s
     }
 
+    // Main function to find nearest matches
     function findNearest() {
       const flow = parseFloat(document.getElementById("ductFlow").value);
       const vel  = parseFloat(document.getElementById("velocity").value);
@@ -150,9 +164,9 @@
         return;
       }
 
-      // Convert L/s -> CFM and compute required area
+      // Convert L/s -> CFM and compute required area (ft²)
       const flowCFM = flow * 2.11888;
-      const neededArea = flowCFM / vel; // in ft²
+      const neededArea = flowCFM / vel;
 
       // Remove old highlights
       document.querySelectorAll("td").forEach(td => {
@@ -170,17 +184,20 @@
 
       // Gather all matches >= neededArea
       const matches = [];
-      for (let i = 0; i < heights.length; i++) {
-        for (let j = 0; j < widths.length; j++) {
-          const areaVal = freeAreas[i][j];
+      // Loop over widths (rows), heights (columns)
+      for (let wIndex = 0; wIndex < widths.length; wIndex++) {
+        for (let hIndex = 0; hIndex < heights.length; hIndex++) {
+          const areaVal = freeAreasTransposed[wIndex][hIndex];
           if (areaVal >= neededArea) {
             const diff = Math.abs(areaVal - neededArea);
             matches.push({
-              widthIn: widths[j],
-              heightIn: heights[i],
+              widthIn: widths[wIndex],
+              heightIn: heights[hIndex],
               area: areaVal,
               diff: diff,
-              exact: diff < 0.000001
+              rowIndex: wIndex,    // table row
+              colIndex: hIndex+1,  // table col (+1 to skip the first width label)
+              exact: diff < 1e-6
             });
           }
         }
@@ -188,11 +205,12 @@
 
       // If no matches
       if (matches.length === 0) {
-        resultDiv.innerHTML = summaryHtml + `<p>No frame sizes meet or exceed ${neededArea.toFixed(2)} sq ft.</p>`;
+        resultDiv.innerHTML = summaryHtml +
+          `<p>No frame sizes meet or exceed ${neededArea.toFixed(2)} sq ft.</p>`;
         return;
       }
 
-      // Sort by closeness (smallest difference first)
+      // Sort by closeness
       matches.sort((a, b) => a.diff - b.diff);
 
       // Take top 3
@@ -201,18 +219,18 @@
 
       // Highlight them in the table
       top3.forEach((m, idx) => {
-        const rowIdx = heights.indexOf(m.heightIn);
-        const colIdx = widths.indexOf(m.widthIn) + 1; // +1 to skip the first "Height" column
-        const rowEl = tableBody.querySelectorAll("tr")[rowIdx];
-        rowEl.querySelectorAll("td")[colIdx].classList.add(`highlight-${idx + 1}`);
+        const rowEl = tableBody.querySelectorAll("tr")[m.rowIndex];
+        const cellEl = rowEl.querySelectorAll("td")[m.colIndex];
+        cellEl.classList.add(`highlight-${idx + 1}`);
       });
 
       // Build the “Nearest Matches” lines
+      // NOTE: The user wants "Height x Width" in the final text.
       let matchesHtml = top3.map((m, idx) => {
-        let highlightClass = `highlight-${idx + 1}`;
+        const highlightClass = `highlight-${idx + 1}`;
         const exactStr = m.exact ? " (Exact)" : "";
         return `<span class="${highlightClass}">
-          Width: ${m.widthIn}" × Height: ${m.heightIn}" 
+          Height: ${m.heightIn}" × Width: ${m.widthIn}"
           (Area: ${m.area.toFixed(2)} sq ft${exactStr})
         </span>`;
       }).join("<br>");
