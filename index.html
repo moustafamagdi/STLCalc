@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Sand Trap Louver Type: S-4770A - Frame Size Calculator</title>
 
   <!-- Google Font for a clean, modern look -->
@@ -12,7 +12,7 @@
   />
 
   <style>
-    /* Global resets and default styling */
+    /* Global resets and basic styles */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -34,7 +34,7 @@
       margin-bottom: 1rem;
     }
 
-    /* Layout: side-by-side cards for inputs/results */
+    /* Layout: side-by-side "cards" for inputs/results */
     .layout {
       display: flex;
       gap: 2rem;
@@ -56,6 +56,7 @@
       font-weight: 500;
     }
 
+    /* Inputs */
     label {
       margin: 1rem 0 0.4rem;
       display: block;
@@ -110,7 +111,10 @@
       background: #f9fafb;
     }
 
-    /* Highlight classes for top 3 matches */
+    /*
+      Highlight classes for top 3 matches. 
+      We use !important so it overrides the zebra background.
+    */
     .highlight-1 {
       background-color: #fff4f4 !important; /* Light Red/Pink */
       font-weight: 600;
@@ -123,7 +127,6 @@
       background-color: #f0fff4 !important; /* Light Green */
       font-weight: 600;
     }
-
   </style>
 </head>
 <body>
@@ -164,12 +167,12 @@
     <div class="card">
       <h2>Results</h2>
       <div class="result" id="result">
-        <!-- Output will appear here -->
+        <!-- Matches and summary appear here -->
       </div>
     </div>
   </div>
 
-  <!-- Table of free areas -->
+  <!-- Table: Width x Height => freeAreas -->
   <table id="dataTable">
     <thead>
       <tr>
@@ -191,12 +194,12 @@
       </tr>
     </thead>
     <tbody id="tableBody">
-      <!-- Populated by JavaScript -->
+      <!-- Populated by JS -->
     </tbody>
   </table>
 
   <script>
-    /* Data arrays: widths, heights, freeAreas (sq ft) */
+    /* 1) Data arrays: widths, heights, freeAreas in sq ft */
     const widths = [18,24,30,36,42,48,54,60,66,72,78,84,90,96];
     const heights = [18,24,30,36,42,48,54,60,66,72,78,84,90,96];
 
@@ -217,15 +220,17 @@
       [3.25,4.50,5.76,7.01,8.34,9.59,10.84,12.09,13.43,14.68,15.93,17.18,18.52,19.77],
     ];
 
-    // Build the table once the page loads
+    /* 2) Build the table once on page load */
     const tableBody = document.getElementById("tableBody");
-    heights.forEach((h, i) => {
+    heights.forEach((heightVal, i) => {
       const row = document.createElement("tr");
-      const firstCell = document.createElement("td");
-      firstCell.textContent = h;
-      firstCell.style.textAlign = "left";
-      row.appendChild(firstCell);
+      // First cell: label for row
+      const labelCell = document.createElement("td");
+      labelCell.textContent = heightVal;
+      labelCell.style.textAlign = "left";
+      row.appendChild(labelCell);
 
+      // Fill rest of row with free-area data
       widths.forEach((_, j) => {
         const cell = document.createElement("td");
         cell.textContent = freeAreas[i][j];
@@ -234,54 +239,54 @@
       tableBody.appendChild(row);
     });
 
-    // Utility functions for unit conversion
+    /* 3) Utility: convert L/s to m³/s, FPM to m/s, etc. */
     function fpmToMps(fpm) {
-      return fpm * 0.00508; // 1 ft/min = 0.00508 m/s
+      return fpm * 0.00508;
     }
     function lsToM3s(ls) {
-      return ls * 0.001; // 1 L/s = 0.001 m³/s
+      return ls * 0.001;
     }
 
-    // Main function triggered by "Find Nearest"
+    /* 4) Main function to find nearest matches */
     function findNearest() {
-      const flow = parseFloat(document.getElementById("ductFlow").value);
-      const vel  = parseFloat(document.getElementById("velocity").value);
+      const ductFlow = parseFloat(document.getElementById("ductFlow").value);
+      const velocity = parseFloat(document.getElementById("velocity").value);
       const resultDiv = document.getElementById("result");
 
-      // Clear previous result
+      // Clear old output
       resultDiv.innerHTML = "";
 
-      // Validate inputs
-      if (isNaN(flow) || flow <= 0 || isNaN(vel) || vel <= 0) {
+      // Validate
+      if (isNaN(ductFlow) || ductFlow <= 0 || isNaN(velocity) || velocity <= 0) {
         resultDiv.innerHTML = `<p style="color:red;">Please enter valid numbers!</p>`;
         return;
       }
 
-      // Calculate required free area
-      const flowCFM = flow * 2.11888;     // L/s to CFM
-      const neededArea = flowCFM / vel;   // sq ft needed
+      // Convert L/s -> CFM, find required free area
+      const flowCFM = ductFlow * 2.11888;
+      const requiredArea = flowCFM / velocity;
 
-      // Remove old highlights
+      // Remove old highlights in the table
       document.querySelectorAll("td").forEach(td => {
         td.classList.remove("highlight-1","highlight-2","highlight-3");
       });
 
-      // Show summary
-      let summaryHtml = `
+      // Summaries
+      const summaryHtml = `
         <p>
           <strong>Input Summary:</strong><br>
-          Air Flow: ${flow.toFixed(2)} L/s = ${flowCFM.toFixed(2)} CFM = ${(lsToM3s(flow)).toFixed(4)} m³/s<br>
-          Face Velocity: ${vel} FPM = ${(fpmToMps(vel)).toFixed(3)} m/s
+          Air Flow: ${ductFlow.toFixed(2)} L/s = ${flowCFM.toFixed(2)} CFM = ${(lsToM3s(ductFlow)).toFixed(4)} m³/s<br>
+          Face Velocity: ${velocity} FPM = ${(fpmToMps(velocity)).toFixed(3)} m/s
         </p>
       `;
 
-      // Collect all possible matches (areas >= neededArea)
+      // Gather all free-areas >= requiredArea
       const matches = [];
       for (let i = 0; i < heights.length; i++) {
         for (let j = 0; j < widths.length; j++) {
           const areaVal = freeAreas[i][j];
-          if (areaVal >= neededArea) {
-            const diff = Math.abs(areaVal - neededArea);
+          if (areaVal >= requiredArea) {
+            const diff = Math.abs(areaVal - requiredArea);
             matches.push({
               widthIn: widths[j],
               heightIn: heights[i],
@@ -293,37 +298,45 @@
         }
       }
 
-      // If no matches
+      // If none meets or exceeds required area:
       if (matches.length === 0) {
-        resultDiv.innerHTML = summaryHtml + `<p>No frame sizes meet or exceed ${neededArea.toFixed(2)} sq ft.</p>`;
+        resultDiv.innerHTML =
+          summaryHtml + `<p>No frame sizes meet or exceed ${requiredArea.toFixed(2)} sq ft.</p>`;
         return;
       }
 
-      // Sort by closeness
-      matches.sort((a,b) => a.diff - b.diff);
+      // Sort by how close the area is to required area
+      matches.sort((a, b) => a.diff - b.diff);
 
       // Take top 3
-      const top3 = matches.slice(0,3);
-      const hasExact = top3.some(m => m.exact);
+      const nearestThree = matches.slice(0, 3);
+      const anyExact = nearestThree.some(m => m.exact);
 
-      // Highlight each match in the table
-      top3.forEach((m, idx) => {
+      // Highlight those 3 cells in the table
+      nearestThree.forEach((m, index) => {
         const rowIdx = heights.indexOf(m.heightIn);
-        const colIdx = widths.indexOf(m.widthIn) + 1; // +1 for the label col
+        const colIdx = widths.indexOf(m.widthIn) + 1; // +1 for the row label
         const rowEl = tableBody.querySelectorAll("tr")[rowIdx];
-        rowEl.querySelectorAll("td")[colIdx].classList.add(`highlight-${idx + 1}`);
+        rowEl.querySelectorAll("td")[colIdx].classList.add(`highlight-${index + 1}`);
       });
 
-      // Build HTML for nearest matches: each on its own line
-      let matchesHtml = top3.map(m => {
-        const exactStr = m.exact ? " (Exact)" : "";
-        return `Width: ${m.widthIn}" × Height: ${m.heightIn}" (Area: ${m.area.toFixed(2)} sq ft${exactStr})`;
+      // Also apply highlights in the "Results" text
+      // For each match, wrap it in <span class="highlight-N"> ... </span>
+      let matchesHtml = nearestThree.map((m, i) => {
+        const highlightClass = `highlight-${i + 1}`;
+        const exactLabel = m.exact ? " (Exact)" : "";
+        return `
+          <span class="${highlightClass}">
+            Width: ${m.widthIn}" × Height: ${m.heightIn}"
+            (Area: ${m.area.toFixed(2)} sq ft${exactLabel})
+          </span>
+        `;
       }).join("<br>");
 
-      let heading = `<p>Nearest Matches (Areas ≥ ${neededArea.toFixed(2)} sq ft):</p>`;
-      let exactNote = hasExact ? `<p><strong>Exact Match Found!</strong></p>` : "";
+      const heading = `<p>Nearest Matches (Areas ≥ ${requiredArea.toFixed(2)} sq ft):</p>`;
+      const exactNote = anyExact ? `<p><strong>Exact Match Found!</strong></p>` : "";
 
-      // Final result
+      // Combine final HTML
       resultDiv.innerHTML = summaryHtml + heading + `<p>${matchesHtml}</p>` + exactNote;
     }
   </script>
